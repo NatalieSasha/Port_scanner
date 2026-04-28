@@ -1,0 +1,129 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Vulnerability Report</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b, #0f0a2a);
+            color: #e9d5ff;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #c084fc;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .target {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ddd6fe;
+            font-size: 16px;
+        }
+
+        .card {
+            background: #2e1065;
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 18px;
+            width: 80%;
+            box-shadow: 0 0 25px rgba(192,132,252,0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 35px rgba(192,132,252,0.4);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #e9d5ff;
+        }
+
+        .port {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .open { color: #a78bfa; }
+        .risk { color: #fb7185; }
+        .info { color: #c4b5fd; }
+
+        .badge-open {
+            background: #4c1d95;
+            color: #a78bfa;
+        }
+
+        .badge-risk {
+            background: #7f1d1d;
+            color: #fb7185;
+        }
+
+        .badge-info {
+            background: #312e81;
+            color: #c4b5fd;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 13px;
+            color: #a78bfa;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Natalie’s Vulnerability Scanner</h1>
+
+<div class="target">
+     Target: <b>127.0.0.1</b> <br>
+     Scan Time: 2026-04-28 20:38:11
+</div>
+
+<div class='card'>
+    <h2>Host: 127.0.0.1</h2>
+
+    <div class='port open'>
+        Port 135 is OPEN 
+        <span class='badge badge-open'>OPEN</span>
+    </div>
+
+    <div class='port info'>
+        Unknown service 
+        <span class='badge badge-info'>INFO</span>
+    </div>
+
+    <div class='port open'>
+         Port 445 is OPEN 
+        <span class='badge badge-open'>OPEN</span>
+    </div>
+
+    <div class='port risk'>
+        SMB (ransomware target) 
+        <span class='badge badge-risk'>RISK</span>
+    </div>
+</div>
+
+<div class="footer">
+    Built using Python + Nmap
+</div>
+
+</body>
+</html>

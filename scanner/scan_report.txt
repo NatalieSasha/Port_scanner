@@ -1,0 +1,8 @@
+=== Vulnerability Scan Report ===
+Target: 127.0.0.1
+
+Host: 127.0.0.1
+Port 135 is OPEN
+Unknown service
+Port 445 is OPEN
+Risk: SMB (ransomware target)
