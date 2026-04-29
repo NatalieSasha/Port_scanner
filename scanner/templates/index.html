@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natalie's Cat-Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --os-purple: #b19cd9;
+            --os-dark-purple: #5b21b6;
+            --window-bg: rgba(233, 213, 255, 0.85);
+            --taskbar-bg: rgba(147, 51, 234, 0.9);
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='bg.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #3b0764;
+        }
+
+        /* ✨ RETRO WINDOW */
+        .window {
+            width: 90%;
+            max-width: 600px;
+            background: var(--window-bg);
+            backdrop-filter: blur(12px);
+            border: 3px solid white;
+            border-right-color: #a78bfa;
+            border-bottom-color: #a78bfa;
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            animation: windowPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes windowPop {
+            from { transform: scale(0.95) translateY(15px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #7c3aed, #c084fc);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            border-radius: 9px 9px 0 0;
+        }
+
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* ✨ UI ELEMENTS */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px 20px;
+            border: 2px solid #a78bfa;
+            border-radius: 99px;
+            width: 65%;
+            background: white;
+            outline: none;
+        }
+
+        button {
+            background: #9333ea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 99px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #581c87;
+            transition: all 0.1s;
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #581c87;
+        }
+
+        /* ✨ CAT LOADING ANIMATION */
+        #loading-zone {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .cat-walker {
+            display: inline-block;
+            font-size: 60px;
+            animation: cat-bounce 0.8s infinite ease-in-out;
+        }
+
+        .cat-emoji::after {
+            content: '🐈';
+            animation: cat-cycle 0.5s steps(1) infinite;
+        }
+
+        @keyframes cat-cycle {
+            0%, 100% { content: '🐈'; }
+            50% { content: '🐈‍⬛'; }
+        }
+
+        @keyframes cat-bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* ✨ RESULTS */
+        .results-scroll {
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            text-align: left;
+            border-left: 6px solid #a78bfa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .is-risk { border-left-color: #db2777; }
+
+        /* ✨ TASKBAR */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 45px;
+            background: var(--taskbar-bg);
+            border-top: 2px solid rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        .start-btn {
+            background: #f5d0fe;
+            border: 1px solid white;
+            padding: 5px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #7c3aed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="window">
+        <div class="title-bar">
+            <span>Natalie's Scanner.exe</span>
+            <div class="window-controls">● ● ●</div>
+        </div>
+
+        <div class="content">
+            <h1 style="font-family:'Quicksand'; margin: 0 0 20px 0;">Natalie’s Scanner</h1>
+            
+            <form id="scanForm" method="POST" class="search-box">
+                <input type="text" name="target" placeholder="Enter IP Address..." value="{{ target if target }}" required>
+                <button type="submit" id="scanBtn">SCAN</button>
+            </form>
+
+            <div id="loading-zone">
+                <div class="cat-walker"><span class="cat-emoji"></span></div>
+                <div style="color: #7c3aed; font-weight: 600; margin-top: 10px;">CAT-SCANNING THE NETWORK...</div>
+            </div>
+
+            {% if results is not none %}
+                <div id="results-container" class="results-scroll">
+                    {% for r in results %}
+                        <div class="result-card {% if r.is_risky %}is-risk{% endif %}">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="font-weight:bold; color:#5b21b6;">Port {{ r.port }}</span>
+                                <span style="font-size:10px; font-weight:800; color:{% if r.is_risky %}#db2777{% else %}#7c3aed{% endif %};">
+                                    {% if r.is_risky %} RISK{% else %}✓ OPEN{% endif %}
+                                </span>
+                            </div>
+                            <div style="font-size: 13px; color: #6d28d9; margin-top: 4px;">{{ r.risk }}</div>
+                        </div>
+                    {% endfor %}
+                    {% if results|length == 0 %}
+                        <p style="padding:10px;">No open ports found. The coast is clear! 🐾</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="taskbar">
+        <div class="start-btn">Natalie OS</div>
+    </div>
+
+    <script>
+        const form = document.getElementById('scanForm');
+        const loading = document.getElementById('loading-zone');
+        const results = document.getElementById('results-container');
+
+        form.onsubmit = function() {
+            if(results) results.style.display = 'none';
+            loading.style.display = 'block';
+            document.getElementById('scanBtn').innerText = 'Meow...';
+        };
+    </script>
+
+</body>
+</html>
