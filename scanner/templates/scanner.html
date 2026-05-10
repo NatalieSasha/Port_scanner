@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natalie's Cat-Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --os-purple: #b19cd9;
+            --os-dark-purple: #5b21b6;
+            --window-bg: rgba(233, 213, 255, 0.7); /* Slightly more transparent */
+            --taskbar-bg: rgba(147, 51, 234, 0.85);
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='bg.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #3b0764;
+        }
+
+        .window {
+            width: 90%;
+            max-width: 600px;
+            background: var(--window-bg);
+            backdrop-filter: blur(15px); /* Stronger glass effect */
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 20px 20px 40px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: windowPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #7c3aed, #c084fc);
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            letter-spacing: 2px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        input {
+            padding: 12px 20px;
+            border: 2px solid #a78bfa;
+            border-radius: 99px;
+            width: 65%;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: #7c3aed; }
+
+        button {
+            background: #9333ea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 99px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #581c87;
+            transition: all 0.1s;
+        }
+
+        button:hover { background: #7c3aed; }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 #581c87; }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background: var(--taskbar-bg);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            gap: 15px;
+        }
+
+        .start-btn {
+            background: #f5d0fe;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-weight: 800;
+            color: #7c3aed;
+            font-size: 13px;
+        }
+
+        .taskbar-tool {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .taskbar-tool:hover { background: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="window">
+        <div class="title-bar">
+            <span>Natalie's Scanner.exe</span>
+            <div class="window-controls">● ● ●</div>
+        </div>
+
+        <div class="content">
+            <h1 style="font-family:'Quicksand'; margin: 0; font-size: 2.2rem;">Natalie’s Scanner</h1>
+            <p style="color: #6d28d9; margin-top: 5px; font-weight: 500;">Secure Network Inspector</p>
+            <!-- Inside your main container -->
+<div id="loading-screen" style="display: none; text-align: center; padding: 40px;">
+    <img src="{{ url_for('static', filename='loading_cat.gif') }}" 
+         style="width: 120px; image-rendering: pixelated; margin-bottom: 15px;">
+    <div style="color: #d8b4fe; font-family: 'Quicksand', sans-serif; font-weight: bold; letter-spacing: 1px;">
+        CAT IS SCANNING NETWORK...
+    </div>
+</div>
+
+<div id="scanner-interface">
+    <!-- Your existing <form> and results go here -->
+</div>
+            <form id="scanForm" method="POST" class="search-box">
+                <input type="text" name="target" placeholder="Enter IP Address..." required>
+                <button type="submit" id="scanBtn">SCAN</button>
+            </form>
+            {% if results %}
+
+<div style="margin-top:30px; text-align:left;">
+
+    <h3 style="color:#5b21b6;">Scan Results:</h3>
+
+    {% for r in results %}
+        <div style="
+            background:white;
+            padding:12px;
+            margin:10px 0;
+            border-radius:10px;
+            border-left:6px solid 
+                {% if r.is_risky %}#ef4444{% else %}#22c55e{% endif %};
+        ">
+            <strong>Port {{ r.port }}</strong><br>
+            {{ r.risk }}
+        </div>
+    {% endfor %}
+
+</div>
+
+{% elif target %}
+    <p style="margin-top:20px; color:#7c3aed;">
+        No open ports found or scan returned no results.
+    </p>
+{% endif %}
+
+            <!-- Results/Loading code remains the same as yours here -->
+        </div>
+    </div>
+
+    <div class="taskbar">
+        <div class="start-btn">Natalie OS</div>
+        <a href="/password" class="taskbar-tool">🔐 Password Tool</a>
+    </div>
+<script>
+    // Grab the elements
+    const scanForm = document.querySelector('form'); // Grabs your scan form
+    const interface = document.getElementById('scanner-interface');
+    const loading = document.getElementById('loading-screen');
+
+    // When the "Scan" button is clicked
+    scanForm.addEventListener('submit', function() {
+        interface.style.display = 'none'; // Hide the input/results
+        loading.style.display = 'block';  // Show the cat!
+    });
+</script>
+</body>
+</html>
