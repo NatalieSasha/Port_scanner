@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natalie OS - Web Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --window-bg: rgba(233, 213, 255, 0.85);
+            --accent: #9333ea;
+            --text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='bg.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Quicksand', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ✨ WINDOW STYLING */
+        .window {
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            background: var(--window-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #7c3aed, #c084fc);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content {
+            padding: 25px;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        /* ✨ BACK BUTTON */
+        .back-link {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+
+        .back-link:hover { transform: translateX(-5px); }
+
+        /* ✨ FORM STYLING */
+        input {
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 2px solid #c084fc;
+            width: 70%;
+            font-family: inherit;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(147, 51, 234, 0.4);
+            background: #7c3aed;
+        }
+
+        /* ✨ RESULTS CARDS */
+        .card {
+            background: rgba(255,255,255,0.6);
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 12px;
+            text-align: left;
+            border-left: 6px solid #ddd;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: scale(1.02); }
+        .safe { border-left-color: #4ade80; }
+        .missing { border-left-color: #f87171; }
+
+        /* ✨ LOADING CAT */
+        #loading-screen {
+            display: none;
+            padding: 40px;
+        }
+
+        .loading-cat {
+            width: 120px;
+            image-rendering: pixelated;
+            margin-bottom: 15px;
+        }
+
+        .loading-text {
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: 1px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="window">
+    <div class="title-bar">
+        <span>🌐 Web Security Scanner</span>
+        <div style="display:flex; gap: 5px;">
+            <div style="width:12px; height:12px; border-radius:50%; background:#ff5f56;"></div>
+            <div style="width:12px; height:12px; border-radius:50%; background:#ffbd2e;"></div>
+            <div style="width:12px; height:12px; border-radius:50%; background:#27c93f;"></div>
+        </div>
+    </div>
+
+    <div class="content">
+        <a href="/" class="back-link">← Return to Desktop</a>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <img src="{{ url_for('static', filename='stickers/loading_cat.gif') }}" class="loading-cat">
+            <div class="loading-text">INTERCEPTING HEADERS...</div>
+        </div>
+
+        <div id="interface">
+            <h2>Analyze Website</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 20px; color: #6b21a8;">Enter a URL to check its security headers.</p>
+
+            <form method="POST" id="scan-form">
+                <input type="text" name="url" placeholder="example.com" required>
+                <br>
+                <button type="submit">Start Security Scan</button>
+            </form>
+
+            {% if result %}
+                <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.1); margin: 30px 0;">
+                
+                {% if result.error %}
+                    <p style="color:#ef4444; font-weight:700;">⚠️ {{ result.error }}</p>
+                {% else %}
+                    <div style="font-weight:700; margin-bottom: 20px; color: #4c1d95;">
+                        Status: <span style="color:var(--accent);">{{ result.status }}</span> | 
+                        HTTPS: {{ "🟢 Secure" if result.https else "🔴 Unsafe" }}
+                    </div>
+
+                    {% for h in result.headers %}
+                        <div class="card {{ h.status }}">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong>{{ h.name }}</strong>
+                                <span style="font-size: 0.8rem;">{{ "✅" if h.value else "❌" }}</span>
+                            </div>
+                            <small style="color: #6b7280; display:block; margin-top: 5px;">{{ h.desc }}</small>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('scan-form');
+    const interface = document.getElementById('interface');
+    const loading = document.getElementById('loading-screen');
+
+    form.addEventListener('submit', function() {
+        interface.style.display = 'none';
+        loading.style.display = 'block';
+    });
+</script>
+
+</body>
+</html>
